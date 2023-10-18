@@ -24,7 +24,46 @@ AShootemCharacter::AShootemCharacter()
 void AShootemCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+
+void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &AShootemCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AShootemCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &AShootemCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AShootemCharacter::LookUp);
+}
+
+
+void AShootemCharacter::MoveForward(float Value)
+{
+	if (Controller != nullptr && Value != 0.f)
+	{
+		const FRotator YawRotation(0.f, Controller-> GetControlRotation().Yaw, 0.f);
+		const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X));
+		AddMovementInput(Direction, Value);
+	}
+}
+
+void AShootemCharacter::MoveRight(float Value)
+{
+	const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
+	AddMovementInput(Direction, Value);
+}
+
+void AShootemCharacter::Turn(float Value)
+{
+	AddControllerYawInput(Value);
+}
+
+void AShootemCharacter::LookUp(float Value)
+{
+	AddControllerPitchInput(Value);
 }
 
 void AShootemCharacter::Tick(float DeltaTime)
@@ -32,10 +71,3 @@ void AShootemCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
