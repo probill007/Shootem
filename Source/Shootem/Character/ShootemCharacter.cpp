@@ -6,6 +6,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Shootem/Weapon/Weapon.h"
+#include "Shootem/ShootemComponents/CombatComponent.h"
 
 AShootemCharacter::AShootemCharacter()
 {
@@ -27,11 +30,26 @@ AShootemCharacter::AShootemCharacter()
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(RootComponent);
 
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
 }
+
+void AShootemCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{	
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AShootemCharacter, OverlappingWeapon, COND_OwnerOnly);
+}
+
 
 void AShootemCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AShootemCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -44,8 +62,18 @@ void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("MoveRight", this, &AShootemCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &AShootemCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShootemCharacter::LookUp);
+
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AShootemCharacter::EquipButtonPressed);
 }
 
+void AShootemCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
+}
 
 void AShootemCharacter::MoveForward(float Value)
 {
@@ -74,8 +102,38 @@ void AShootemCharacter::LookUp(float Value)
 	AddControllerPitchInput(Value);
 }
 
-void AShootemCharacter::Tick(float DeltaTime)
+void AShootemCharacter::EquipButtonPressed()
 {
-	Super::Tick(DeltaTime);
+	if (Combat && HasAuthority())
+	{
+		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
 
+void AShootemCharacter::SetOverlappingWeapon(AWeapon* Weapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(false);
+	}
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget(true);
+		}
+	}
+}
+
+void AShootemCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
+{
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget(true);
+	}
+	if (LastWeapon)
+	{
+		LastWeapon->ShowPickupWidget(false);
+	}
 }
