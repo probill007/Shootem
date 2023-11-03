@@ -67,6 +67,8 @@ void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AShootemCharacter::EquipButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AShootemCharacter::CrouchButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &AShootemCharacter::AimButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &AShootemCharacter::AimButtonReleased);
 }
 
 void AShootemCharacter::PostInitializeComponents()
@@ -132,6 +134,22 @@ void AShootemCharacter::CrouchButtonPressed()
 	}
 }
 
+void AShootemCharacter::AimButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
+}
+
+void AShootemCharacter::AimButtonReleased()
+{
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
+}
+
 void AShootemCharacter::ServerEquipButtonPressed_Implementation()
 {
 	if (Combat)
@@ -172,4 +190,9 @@ void AShootemCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 bool AShootemCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool AShootemCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
 }
