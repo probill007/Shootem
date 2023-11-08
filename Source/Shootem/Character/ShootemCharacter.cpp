@@ -9,6 +9,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Shootem/Weapon/Weapon.h"
 #include "Shootem/ShootemComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AShootemCharacter::AShootemCharacter()
 {
@@ -34,6 +36,8 @@ AShootemCharacter::AShootemCharacter()
 	Combat->SetIsReplicated(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 void AShootemCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -52,6 +56,8 @@ void AShootemCharacter::BeginPlay()
 void AShootemCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AimOffset(DeltaTime);
 }
 
 void AShootemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -148,6 +154,31 @@ void AShootemCharacter::AimButtonReleased()
 	{
 		Combat->SetAiming(false);
 	}
+}
+
+void AShootemCharacter::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat == nullptr) return;
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size();
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	if (Speed == 0.f && !bIsInAir)
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotator = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotator.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	if (Speed > 0.f || bIsInAir)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = true;
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
 }
 
 void AShootemCharacter::ServerEquipButtonPressed_Implementation()
