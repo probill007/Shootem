@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Shootem/Weapon/Weapon.h"
 
+
 void UShootemAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
@@ -34,6 +35,7 @@ void UShootemAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EquippedWeapon = ShootemCharacter->GetEquippedWeapon();
 	bIsCrouched = ShootemCharacter->bIsCrouched;
 	bAiming = ShootemCharacter->IsAiming();
+	TurningInPlace = ShootemCharacter->GetTurningInPlace();
 
 	FRotator AimRotation = ShootemCharacter->GetBaseAimRotation();
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShootemCharacter->GetVelocity());

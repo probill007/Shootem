@@ -2,13 +2,12 @@
 
 #pragma once
 
+#include "Shootem/ShootemTypes/turningInPlace.h"
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "ShootemAnimInstance.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class SHOOTEM_API UShootemAnimInstance : public UAnimInstance
 {
@@ -60,4 +59,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	FTransform LeftHandTransform;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	ETurningInPlace TurningInPlace;
 };
