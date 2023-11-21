@@ -163,7 +163,7 @@ void AShootemCharacter::AimButtonReleased()
 
 void AShootemCharacter::AimOffset(float DeltaTime)
 {
-	if (Combat && Combat == nullptr) return;
+	if (Combat && Combat->EquippedWeapon == nullptr) return;
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	float Speed = Velocity.Size();
