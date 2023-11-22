@@ -13,10 +13,10 @@ class SHOOTEM_API AProjectile : public AActor
 
 public:
 	AProjectile();
-	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 protected:
-	virtual void Tick(float DeltaTime) override;
+	virtual void BeginPlay() override;
 
 private:
 
